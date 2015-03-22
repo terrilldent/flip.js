@@ -1,0 +1,111 @@
+
+.page,
+.pages,
+.flip-pages,
+.page-wrapper,
+.flip-page-wrapper{
+    width:100%;
+    height:100% 
+    }
+
+.shadow,
+.flip-pages,
+.pages{
+    position: absolute;
+    overflow: hidden;
+    }
+.shadow,
+.flip-pages {
+    display:none;
+    pointer-events:none;
+    }
+
+.shadow{
+    width: 50%;
+    height: 100%;
+    background: #000;   
+    -webkit-transform:translateZ(0);
+    z-index: 2;
+    }
+
+.page {
+    background: #FFF;
+    position: relative;
+    }
+
+.page-wrapper{
+    position: absolute;
+    overflow: hidden;
+    z-index: 1;
+    }
+    .page-wrapper.right{
+        width: 50%;
+        right: 0;
+        left: auto;
+        -webkit-perspective-origin: 0% center;
+           -moz-perspective-origin: 0% center;
+            -ms-perspective-origin: 0% center;
+             -o-perspective-origin: 0% center;
+                perspective-origin: 0% center;
+
+        -webkit-transform-origin: 0% center;
+           -moz-transform-origin: 0% center;
+            -ms-transform-origin: 0% center;
+             -o-transform-origin: 0% center;
+                transform-origin: 0% center;
+        }
+    .page-wrapper.left{
+        width: 50%;
+        right: auto;
+        left: 0;
+        -webkit-perspective-origin: 100% center;
+           -moz-perspective-origin: 100% center;
+            -ms-perspective-origin: 100% center;
+             -o-perspective-origin: 100% center;
+                perspective-origin: 100% center;
+
+        -webkit-transform-origin: 100% center;
+           -moz-transform-origin: 100% center;
+            -ms-transform-origin: 100% center;
+             -o-transform-origin: 100% center;
+                transform-origin: 100% center;
+        }
+    .page-wrapper.right .page{
+        margin: 0 -100%;
+        /*background: #CFC;*/
+        width: 200%;
+        }
+    .page-wrapper.left .page{
+        /*background: #FCC;*/
+        width: 200%;
+        }
+
+
+
+.flip-pages .page-wrapper {
+    display: none;
+    -webkit-transform: translate3D( 0, 0, 0 );
+    -webkit-transition: -webkit-transform 0.5s ease-in;
+    z-index: 2;
+    }
+    .flip-pages .right{
+        box-shadow: 20px 0 35px -35px #555;
+        }
+    .flip-pages .left{
+        box-shadow: -20px 0 35px -35px #555;
+        }
+    .dragging .page-wrapper{
+        position: absolute;
+        overflow: hidden;
+        -webkit-transition: 0;
+        }   
+    .flip-pages .page{
+        width: 200%;
+        }
+    .flip-pages .page{
+        }
+
+
+
+
+
