@@ -1,11 +1,4 @@
-/* ----------- Reset Styles --------- */
-body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,form,label,input,textarea,p,td{margin:0;padding:0}
-table{border-collapse:collapse;border-spacing:0}
-a,a:active,a:focus,input,textarea{outline:none}
-td,th{vertical-align:top;text-align:left}
-img,iframe{ border:none}
-ol,ul{list-style:none}
-h1,h2,h3{font-size:100%;font-weight:normal}
+
 
 /* ----------- WIREFRAME --------- */
 
@@ -14,6 +7,8 @@ body,
 #app{
     width:100%;
     height:100%;
+    padding: 0;
+    margin: 0;
     overflow: hidden;
     }
     
@@ -74,10 +69,12 @@ h1 {
     line-height: 1.5em;
     font-weight: 300;
     color: #fff;
+    padding: 0;
     }
 h2 {
     font-size: 3em;
     color: #fff;
+    margin: 0;
     }
 
 
