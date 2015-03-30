@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <link rel='stylesheet' type='text/css' media='all' href='../../dist/css/flip.css'>
+    <link rel='stylesheet' type='text/css' media='all' href='css/content.css'>
+    <link href='http://fonts.googleapis.com/css?family=Oswald:700' rel='stylesheet' type='text/css'>
+    <title>sample book 1 - flip.js</title>
+</head>
+<body>
+
+<div id="apollo-book" class="flip-book">
+    <div>
+        <div style="background-image:url('images/apollo11-liftoff.jpg')" >
+            <div class="cover-text">
+                <h1>APOLLO 11</h1>
+                <h2>NASA Photographs</h2>
+            </div>
+        </div>
+        <div style="background-image:url('images/apollo11-lander.jpg')">
+        </div>
+        <div style="background-image:url('images/apollo11-marble.jpg')">
+        </div>
+        <div style="background-image:url('images/apollo11-footprint.jpg')">
+            <div class="button" id="close-button">Close Book</div>
+        </div>
+    </div>
+</div>
+
+<script type='text/javascript' src='../../dist/js/flip-v1.0.0.js'></script>
+<script type='text/javascript'>
+    
+    var sampleBookInit = function(){
+        flip.basic( 'apollo-book' );
+    };
+
+    document.getElementById('close-button').addEventListener('click', function(){
+        flip.close();
+    },true);
+
+    window.addEventListener( 'DOMContentLoaded', sampleBookInit, true );
+
+</script>
+</body>
+</html>

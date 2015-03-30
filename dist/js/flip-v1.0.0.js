@@ -1,8 +1,7 @@
-/*jslint bitwise: true, browser: true, continue: false, devel: true, plusplus: true, regexp: true, sloppy: true, todo:true, white: true */
-/*global document, window */
-
-/* Copyright Terrill Dent, 2013 */
-
+/*!
+ * flip 1.0.0 - Copyright 2015 Terrill Dent, http://terrill.ca
+ * Released under MIT license, http://terrill.ca/flipjs/license
+ */
 var flip = (function()
 {
     var flip = {},
@@ -101,15 +100,7 @@ var flip = (function()
         return angle;
     };
 
-    /*
-    getShadowOpacity = function( angle )
-    {
-        if( angle > 90 ) {
-            angle = 180 - angle;
-        }
-        return Math.abs( 0.00001 * ( Math.pow( angle, 2 ) ) - 0.07 );
-    };
-    */
+    
 
     onResize = function() 
     {
@@ -119,6 +110,7 @@ var flip = (function()
     commonEndTransition = function()
     {
         flip.transitioning = false;
+        flip.autotransition = false;
         shadow.style.display = 'none';
         flipPagesContainer.style.display = 'none';  
 
@@ -182,7 +174,7 @@ var flip = (function()
         topPage = nextPage;
         nextPage = null;
 
-        topPage.onShowComplete();
+        topPage.onShowComplete( pageStack.length );
     };
 
     onTransitionEndPrev = function() 
@@ -222,7 +214,7 @@ var flip = (function()
             flipPagesContainer.appendChild( prevPage.flip );
         }
 
-        topPage.onShowComplete();
+        topPage.onShowComplete( pageStack.length );
     };
 
     
@@ -231,20 +223,25 @@ var flip = (function()
         breach : function( deltaX ) 
         {       
             flip.transitioning = true;
-            flip.addClass( flipPagesContainer, 'dragging' );
-
             previousAngle = null;
 
-            if( leftFlip ) {                
-                leftFlip.style[transitionKey]  = transformProp + ' 0';
-                leftFlip.removeEventListener( transitionEndEventName, onTransitionEndStay, false);
-                leftFlip.removeEventListener( transitionEndEventName, onTransitionEndNext, false);
+            if( !flip.autotransition ){
+                flip.addClass( flipPagesContainer, 'dragging' );
+            
+                if( leftFlip ) {           
+                    console.log( 'disable transition left ');     
+                    leftFlip.style[transitionKey]  = transformProp + ' 0';
+                    leftFlip.removeEventListener( transitionEndEventName, onTransitionEndStay, false);
+                    leftFlip.removeEventListener( transitionEndEventName, onTransitionEndNext, false);
+                }
+                if( rightFlip ) {
+                    console.log( 'disable transition right');
+                    rightFlip.style[transitionKey]  = transformProp + ' 0';
+                    rightFlip.removeEventListener( transitionEndEventName, onTransitionEndStay, false);
+                    rightFlip.removeEventListener( transitionEndEventName, onTransitionEndPrev, false);
+                }
             }
-            if( rightFlip ) {
-                rightFlip.style[transitionKey]  = transformProp + ' 0';
-                rightFlip.removeEventListener( transitionEndEventName, onTransitionEndStay, false);
-                rightFlip.removeEventListener( transitionEndEventName, onTransitionEndPrev, false);
-            }
+
             
             // TODO: refresh flip?
                    
@@ -482,16 +479,17 @@ var flip = (function()
                 var baseTransform = 'translateX( 0 ) perspective(3000' + perspectiveUnits + ') ';
 
                 // Start the artificial transition
+                flip.autotransition = true;
                 dragListener.breach( -20, 0 );
 
                 rightFlip.style[transformKey] = baseTransform + 'rotateY( -90deg )'; 
-                leftFlip.style[transformKey]  = baseTransform + 'rotateY( 0deg )';
+                leftFlip.style[transformKey]  = baseTransform + 'rotateY( -360deg )';
                 
-                rightFlip.style[transitionKey] = transformProp + ' 300ms ease-in';  
-                leftFlip.style[transitionKey]  = transformProp + ' 300ms ease-in';   
-             
+                rightFlip.style[transitionKey] = transformProp + ' 1300ms ease-in';  
+                leftFlip.style[transitionKey]  = transformProp + ' 1300ms ease-in';   
+
                 setTimeout( function() {
-                  
+                      
                     leftFlip.style[transformKey] = baseTransform + 'rotateY( 90deg )';
 
                     // Wait for the second half
@@ -505,8 +503,8 @@ var flip = (function()
                             // Cleanup
                             onTransitionEndPrev();
                             
-                        }, 300 );
-                    }, 300 );
+                        }, 1450 );
+                    }, 1430 );
                 }, 0 );
             }, 0 );
         }
@@ -525,13 +523,14 @@ var flip = (function()
             pagesContainer.appendChild( topPage.html );
             flipPagesContainer.appendChild( topPage.flip );
 
-            topPage.onShowComplete();
+            topPage.onShowComplete( pageStack.length );
         
         } else {
 
             // This invokes an artificial page flip
             // The News uses this to open
-            
+        
+            flip.autotransition = true;
             flip.prime( newPageControl );
           
             setTimeout( function() {
@@ -589,11 +588,30 @@ var flip = (function()
         flipPagesContainer.appendChild( nextPage.flip );
     };
 
-    flip.init = function( basePagesContainer, flipContainer, shadowPanel, firstPage )
+    flip.createElem = function( tagName, attributes ){
+        var element = document.createElement( tagName ),
+            key;
+
+        for( key in attributes ) {
+            if( attributes.hasOwnProperty( key ) ) {
+                element[ key ] = attributes[ key ];
+            }
+        }
+        return element;
+    };
+
+    flip.init = function( bookElement, firstPage )
     {
-        pagesContainer = basePagesContainer;
-        flipPagesContainer = flipContainer;
-        shadow = shadowPanel;
+        var fragment = document.createDocumentFragment();
+
+        pagesContainer     = flip.createElem('div', { className: 'flip-base-pages' });
+        flipPagesContainer = flip.createElem('div', { className: 'flip-pages' });
+        shadow             = flip.createElem('div', { className: 'flip-shadow' });
+        
+        fragment.appendChild( pagesContainer );
+        fragment.appendChild( shadow );
+        fragment.appendChild( flipPagesContainer );
+        bookElement.appendChild( fragment );
 
         if( firstPage ) {
             flip.push( firstPage );
@@ -607,3 +625,299 @@ var flip = (function()
 
     return flip;
 }());
+
+
+var flip = window.flip;
+
+flip.basic = function( bookElement )
+{
+    // In case a string ID is passed
+    bookElement = typeof bookElement === 'string' ? document.getElementById(bookElement) : bookElement;
+
+    if( bookElement.childNodes.length !== 1 && console.err ){
+        console.err( 'Expects a single child that contains all the page elements' );
+        return;
+    }
+
+    var pages = [],
+        pageElem,
+        bookPagesParent,
+        onShowComplete;
+
+    bookPagesParent = bookElement.firstElementChild;
+
+    onShowComplete = function( pageIndex ) {
+        if( pages[ pageIndex + 1 ] ) {
+            flip.prime( pages[ pageIndex + 1 ] );
+        }
+    };
+
+    // Remove the single child element and create pages
+    bookPagesParent.parentNode.removeChild(bookPagesParent);
+    while( bookPagesParent.firstElementChild ) {
+        pageElem = bookPagesParent.firstElementChild;
+        pageElem.parentNode.removeChild( pageElem );
+        pages.push( flip.page.create( pageElem, { onShowComplete : onShowComplete } ));
+    }
+
+    // Show the first page
+    flip.init( bookElement, pages[ 0 ] );
+};
+
+
+
+var flip = window.flip;
+
+flip.draggable = (function() 
+{
+    var draggablePrototype = {
+            
+        getPagePosition : function( e )
+        {
+            e = e.touches ? e.touches[0] : e;
+            return { x : e.pageX , y : e.pageY };
+        },
+            
+        handleEvent : function( e )
+        {
+            var that = this;
+            
+            switch( e.type ) {
+                case 'touchstart': // Fall through
+                case 'mousedown':
+                    that.handleTouchStart( e );
+                    break;
+                case 'touchmove': // Fall through
+                case 'mousemove':
+                    that.handleTouchMove( e );
+                    break;
+                case 'touchend': // Fall through
+                case 'mouseup':
+                    that.handleTouchEnd( e );
+                    break;
+                case 'mouseout':
+                    // This filters the mouseout events to only those when you leave the window
+                    if( e.relatedTarget && e.relatedTarget.tagName === 'HTML' ){
+                        that.handleTouchEnd( e );
+                    }
+                    break;
+            }
+        },
+        
+        reset : function()
+        {
+            var that = this;
+            
+            document.body.removeEventListener( 'touchmove', that, false );
+            document.body.removeEventListener( 'touchend',  that,  false );
+            
+            if( flip.simulateTouch ) {
+                document.body.removeEventListener( 'mousemove', that, false );
+                document.body.removeEventListener( 'mouseup',   that,  false );
+                window.removeEventListener( 'mouseout', that, false );
+            }
+            
+            if( !that.curXY  ) {
+                return;
+            }
+            
+            if( that.listener.reset ) {
+                that.listener.reset();
+            }
+
+            that.curXY = null;
+        },
+            
+        handleTouchStart : function( e )
+        {
+            var that = this;
+            
+            // TODO: add condition if target is an input, then return.
+            
+            e.preventDefault();
+            
+            if( that.curXY && e.touches && e.touches.length > 1 ) {
+                that.reset();
+                return;
+            }
+            
+            if( ( e.touches && e.touches.length ) > 1 ||
+                (e.which && e.which === 3) || (e.button && e.button === 2) ) {
+                // Ignore right click and second finger press
+                return;
+            }
+            
+            that.outsideBuffer = false;
+            that.curXY = null;
+            
+            document.body.addEventListener( 'touchmove', that, false );
+            document.body.addEventListener( 'touchend', that, false );
+            
+            if( flip.simulateTouch ) {
+                document.body.addEventListener( 'mousemove', that, false );
+                document.body.addEventListener( 'mouseup', that, false );
+                window.addEventListener( 'mouseout', that, false );
+            }
+            
+            that.startXY = that.getPagePosition( e );
+            that.curXY = that.startXY;
+            if( that.listener.start ) {
+                that.listener.start();
+            }
+        },
+        
+        // This is bound to the document.body
+        handleTouchMove : function( e )
+        {
+            var that = this,
+                deltaY,
+                deltaX;
+            
+            e.preventDefault();
+            
+            if( e.touches && e.touches.length > 1 ) {
+                that.reset();
+                return;
+            }
+                        
+            // Check if we are outside the horizontal scroll buffer
+            that.curXY = that.getPagePosition( e );
+            deltaX = that.startXY.x - that.curXY.x;
+            deltaY = that.startXY.y - that.curXY.y;
+            
+            if( that.buffer ) {
+                if( !that.outsideBuffer && Math.abs( deltaX ) >= that.buffer ) {
+                        
+                    if( that.listener.breach ) {
+                        that.listener.breach( deltaX, deltaY );
+                    }
+
+                    that.outsideBuffer = true;
+                }
+            }
+            
+            if( !that.buffer || that.outsideBuffer ) {
+                if( that.listener.move ) {
+                    that.listener.move();
+                }
+            }
+        },
+          
+        handleTouchEnd : function( e )
+        {
+            var that = this;
+            
+            e.preventDefault();
+            that.reset();
+        }
+    };
+    
+    return {
+        
+        create : function( target, listener, buffer ) {
+            
+            var draggable = Object.create( draggablePrototype );
+            
+            draggable.target = target;
+            draggable.listener = listener;
+            draggable.buffer = buffer;
+
+            target.addEventListener( 'touchstart', draggable, false );
+            if( flip.simulateTouch ) {
+                target.addEventListener( 'mousedown', draggable, false );
+            }
+            return draggable;
+        }
+    };
+}());
+
+
+
+var flip = window.flip;
+
+flip.page = (function() 
+{
+    var pagePrototype = {
+    
+        refreshFlip : function()
+        {
+            var that = this,
+                oldFlip = that.flip,
+                oldFlipParent;
+
+            if( flip.transitioning ) {
+                if( !that.dirty ) {
+                    that.dirty = true;
+                    flip.addListener( that );
+                }
+                return;
+            }
+
+            if( that.dirty ){
+                that.dirty = false;
+                flip.removeListener( that );
+            }
+
+            that.flip = that.html.cloneNode( true );
+                
+            if( oldFlip && oldFlip.parentNode ) {
+                oldFlipParent = oldFlip.parentNode;
+                if( oldFlipParent ) {
+                    oldFlipParent.removeChild( oldFlip );
+                    oldFlipParent.appendChild( that.flip );
+                }
+            }
+        },
+
+        globalTransitionEnd : function() {
+            this.refreshFlip();
+        },
+
+        // When a transition is started
+        onObscure : function()
+        {
+            var that = this;
+            if( that.listener.onObscure ) {
+                that.listener.onObscure();
+            }
+        },
+
+        // When the page is the topmost
+        onStay : function()
+        {
+            var that = this;
+            if( that.listener.onStay ) {
+                that.listener.onStay();
+            }
+        },
+
+        // When the page is originally shown
+        onShowComplete : function(index)
+        {
+            var that = this;
+            if( that.listener.onShowComplete ) {
+                that.listener.onShowComplete(index);
+            }
+            that.onStay();
+        }
+    };
+    
+    return {
+
+        // Create a custom page using provided HTML
+        create : function( pageContentElem, listener ) {
+            
+            var draggable = Object.create( pagePrototype );
+        
+            flip.addClass( pageContentElem, 'flip-page' );
+
+            draggable.listener = listener;
+            draggable.html = flip.createElem( 'div', {className: 'flip-page-wrapper'});
+            draggable.html.appendChild( pageContentElem );
+            draggable.flip = draggable.html.cloneNode( true );
+
+            return draggable;
+        }
+    };
+}());
+

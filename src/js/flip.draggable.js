@@ -1,5 +1,4 @@
-/*jslint bitwise: true, browser: true, continue: false, devel: true, plusplus: true, regexp: true, sloppy: true, todo:true, white: true */
-/*global $, flip */
+var flip = window.flip;
 
 flip.draggable = (function() 
 {

@@ -1,7 +1,5 @@
-/*jslint bitwise: true, browser: true, continue: false, devel: true, plusplus: true, regexp: true, sloppy: true, white: true */
-/*global flip, $, document, window */
 
-/* Copyright Terrill Dent, 2013 */
+var flip = window.flip;
 
 flip.page = (function() 
 {
@@ -60,11 +58,11 @@ flip.page = (function()
         },
 
         // When the page is originally shown
-        onShowComplete : function()
+        onShowComplete : function(index)
         {
             var that = this;
             if( that.listener.onShowComplete ) {
-                that.listener.onShowComplete();
+                that.listener.onShowComplete(index);
             }
             that.onStay();
         }
@@ -73,14 +71,15 @@ flip.page = (function()
     return {
 
         // Create a custom page using provided HTML
-        create : function( html, listener ) {
+        create : function( pageContentElem, listener ) {
             
             var draggable = Object.create( pagePrototype );
-    
+        
+            flip.addClass( pageContentElem, 'flip-page' );
+
             draggable.listener = listener;
-            draggable.html = document.createElement( 'div' );
-            draggable.html.className = 'page-wrapper';
-            draggable.html.appendChild( html );
+            draggable.html = flip.createElem( 'div', {className: 'flip-page-wrapper'});
+            draggable.html.appendChild( pageContentElem );
             draggable.flip = draggable.html.cloneNode( true );
 
             return draggable;
