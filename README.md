@@ -129,3 +129,9 @@ You can build the library yourself using npm and grunt. Clone the repo, then run
 npm install
 grunt
 ```
+
+Looking for a JavaScript Wizard?
+------------------
+
+This library was made by Terrill Dent. [I am available for hire, or consulting](http://www.terrill.ca/about/). Get in touch and let's work together!
+
