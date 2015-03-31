@@ -12,6 +12,8 @@ module.exports = function( grunt )
       distDirJS = 'dist/js/',
       distDirCSS = 'dist/css/',
 
+      devCSS    = name+'.css',
+
       devJS     = name+'.js',
       minJS     = name+'.min.js';
       gzipJS    = name+'.min.js.gz';
@@ -20,17 +22,6 @@ module.exports = function( grunt )
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
 
-
-    copy: {
-      css: {
-        files: [{
-            cwd:  sourceDir + 'css/',
-            dest: distDirCSS,
-            expand: true,
-            src: ['**/*.css']
-        }]
-     }
-    },
 
     // configure uglify task
     uglify:{
@@ -74,10 +65,15 @@ module.exports = function( grunt )
         },
         banner: bannerContent
       },
-      flip: {
+      js: {
         src: [ sourceDir + 'js/flip.js', 
                sourceDir + '**/*.js' ],
         dest : distDirJS + devJS
+      },
+      css: {
+        src: [ sourceDir + 'css/flip.css', 
+               sourceDir + '**/*.css' ],
+        dest : distDirCSS + devCSS
       }
     },
 
@@ -93,12 +89,11 @@ module.exports = function( grunt )
   });
  
   grunt.loadNpmTasks('grunt-contrib-concat');
-  grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-compress');
   grunt.loadNpmTasks('grunt-jslint');
 
-  grunt.registerTask('default', [ 'copy:css', 'jslint:flip', 'concat:flip', 'uglify:flip', 'compress:flip' ] );
+  grunt.registerTask('default', [ 'jslint:flip', 'concat', 'uglify:flip', 'compress:flip' ] );
 };
 
 

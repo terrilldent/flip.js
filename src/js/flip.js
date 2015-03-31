@@ -178,6 +178,10 @@ var flip = (function()
         topPage = nextPage;
         nextPage = null;
 
+        if( topPage.html.style.display !== 'block' ){
+            topPage.html.style.display = 'block';
+        }
+
         topPage.onShowComplete( pageStack.length );
     };
 
@@ -233,13 +237,11 @@ var flip = (function()
                 flip.addClass( flipPagesContainer, 'dragging' );
             
                 if( leftFlip ) {           
-                    console.log( 'disable transition left ');     
                     leftFlip.style[transitionKey]  = transformProp + ' 0';
                     leftFlip.removeEventListener( transitionEndEventName, onTransitionEndStay, false);
                     leftFlip.removeEventListener( transitionEndEventName, onTransitionEndNext, false);
                 }
                 if( rightFlip ) {
-                    console.log( 'disable transition right');
                     rightFlip.style[transitionKey]  = transformProp + ' 0';
                     rightFlip.removeEventListener( transitionEndEventName, onTransitionEndStay, false);
                     rightFlip.removeEventListener( transitionEndEventName, onTransitionEndPrev, false);
@@ -474,13 +476,15 @@ var flip = (function()
 
     flip.pop = function()
     {
+        var secondHalfFlip;
+
         if( topPage !== frontPage ) {
 
             // This invokes an artificial page flip backwards
             // This outter timeout allows any modifications that happened to the page order
             // to complete first, before the transitions start
             setTimeout( function() {
-                var baseTransform = 'translateX( 0 ) perspective(3000' + perspectiveUnits + ') ';
+                var baseTransform = 'translateX(0px) perspective(3000' + perspectiveUnits + ') ';
 
                 // Start the artificial transition
                 flip.autotransition = true;
@@ -489,33 +493,31 @@ var flip = (function()
                 rightFlip.style[transformKey] = baseTransform + 'rotateY( -90deg )'; 
                 leftFlip.style[transformKey]  = baseTransform + 'rotateY( -360deg )';
                 
-                rightFlip.style[transitionKey] = transformProp + ' 1300ms ease-in';  
-                leftFlip.style[transitionKey]  = transformProp + ' 1300ms ease-in';   
+                rightFlip.style[transitionKey] = transformProp + ' 300ms ease-in';  
+                leftFlip.style[transitionKey]  = transformProp + ' 300ms ease-in';   
 
                 setTimeout( function() {
-                      
-                    leftFlip.style[transformKey] = baseTransform + 'rotateY( 90deg )';
-
                     // Wait for the second half
-                    setTimeout( function() {
-                    
+                    secondHalfFlip = function() {
+                        leftFlip.removeEventListener( transitionEndEventName, secondHalfFlip, false);
+
                         rightFlip.style[transformKey] = baseTransform + 'rotateY( 0deg )';
                         
                         // Wait for completion
-                        setTimeout( function() {
-                            
-                            // Cleanup
-                            onTransitionEndPrev();
-                            
-                        }, 1450 );
-                    }, 1430 );
-                }, 0 );
+                        setTimeout( onTransitionEndPrev, 400 );
+                    };
+
+                    leftFlip.addEventListener( transitionEndEventName, secondHalfFlip, false);
+                    leftFlip.style[transformKey] = baseTransform + 'rotateY( -270deg )';
+                }, 10 );
             }, 0 );
         }
     };
 
     flip.push = function( newPageControl )
     {
+        var secondHalfFlip;
+
         if( !frontPage ) {
             
             // This is the base case
@@ -532,7 +534,6 @@ var flip = (function()
         } else {
 
             // This invokes an artificial page flip
-            // The News uses this to open
         
             flip.autotransition = true;
             flip.prime( newPageControl );
@@ -551,22 +552,20 @@ var flip = (function()
              
                 setTimeout( function() {
                   
-                    rightFlip.style[transformKey] = baseTransform + 'rotateY( -90deg )';
-
                     // Wait for the second half
-                    setTimeout( function() {
-                    
+                    secondHalfFlip = function() {
+                        rightFlip.removeEventListener( transitionEndEventName, secondHalfFlip, false);
+
                         leftFlip.style[transformKey] = baseTransform + 'rotateY( 0deg )';
                     
                         // Wait for completion
-                        setTimeout( function() {
-                            
-                            // Cleanup
-                            onTransitionEndNext();
-                            
-                        }, 300 );
-                    }, 300 );
-                }, 0 );
+                        setTimeout( onTransitionEndNext, 400 );
+                    };
+
+                    rightFlip.addEventListener( transitionEndEventName, secondHalfFlip, false);
+                    rightFlip.style[transformKey] = baseTransform + 'rotateY( -90deg )';
+
+                }, 10 );
             }, 0 );
         }
     };

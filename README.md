@@ -1,20 +1,26 @@
 flip.js
 =======
 
-Mobile first, flat style JavaScript Page Flip Library.
+Mobile first, flat style JavaScript Page Flip Library. Cross browser support, and works on most desktop browsers.
 
 This library creates a page folding effect using a flat visual style. No curling effects are used, and shadows are kept to a minimum. 
+
+![](http://www.terrill.ca/flipjs/img/flip-example@0.5x.png)
 
 Examples
 --------
 
+[Basic Example](http://www.terrill.ca/flipjs/basic-book/)
 
+[Advanced Example](http://www.terrill.ca/illustrations/)
 
 
 Basic Example
 -----------
 
-The easiest way to get started is by calling `flip.basic(element)`. It expects the provided element to have a single child containing all the pages in the book. Full API docs below. 
+First import the CSS and JS files from the '/dist' directory into your project.
+
+The easiest way to get started is by calling `flip.basic(element)`. It expects the provided element to have a single child containing all the pages in the book, as in the example below. 
 
 
 ```
@@ -111,7 +117,7 @@ Creates a page for the book with the provided content element. The optional page
 Limitations
 -----------
 
-Rendering the 'page' in transit requires a copy of the original HTML. Modifying the page during transit can result in the partial rendering. It's best to modify pages after flipping is complete. You can register a callback for the end of various animation events with the API.
+Making changes to page content during a transition is not handled very well. The library creates a shadow copy of the original HTML for use while flipping. Modifying the page during transit can result in a partial rendering. It's best to modify pages after flipping is complete. You can register a callback for the end of various animation events with the API.
 
 
 Build Instructions
