@@ -2,26 +2,27 @@
  * flip 1.0.0 - Copyright 2015 Terrill Dent, http://terrill.ca
  * Released under MIT license, http://terrill.ca/flipjs/license
  */
+
 var flip = (function()
 {
     var flip = {},
 
         listeners = [],
 
-        // Vendor prefix detection for CSS 
+        // Vendor prefix detection for CSS
         ua      = navigator.userAgent,
         webkit  = (/webkit/i).test(navigator.appVersion),
         firefox = (/firefox/i).test(ua),
         ie      = (/trident/i).test(ua),
         safari  = (/safari/i).test(ua),
         opera   = window.opera,
-        
+
         vendor = webkit ? 'webkit' :
                  firefox ? '' :
                  ie ? 'ms' :
                  opera ? 'O' : '',
 
-        transitionKey = vendor + 'transition',
+        transitionKey = 'transition',
         transformKey  = (vendor ? (vendor + 'T') : 't' ) + 'ransform',
 
         transformProp  = (safari ? '-webkit-' : '') + 'transform',
@@ -29,9 +30,28 @@ var flip = (function()
 
         perspectiveUnits = firefox ? 'px' : '',
 
+        nextFrame = (function() {
+            return window.requestAnimationFrame
+                || window.webkitRequestAnimationFrame
+                || window.mozRequestAnimationFrame
+                || window.oRequestAnimationFrame
+                || window.msRequestAnimationFrame
+                || function(callback) { return setTimeout(callback, 1); };
+        })(),
+        cancelFrame = (function () {
+            return window.cancelRequestAnimationFrame
+                || window.webkitCancelAnimationFrame
+                || window.webkitCancelRequestAnimationFrame
+                || window.mozCancelRequestAnimationFrame
+                || window.oCancelRequestAnimationFrame
+                || window.msCancelRequestAnimationFrame
+                || clearTimeout;
+        })(),
+
         // Functions
         onResize,
         getAngle,
+        updatePosition,
         //getShadowOpacity,
         commonEndTransition,
         onTransitionEndStay,
@@ -77,7 +97,7 @@ var flip = (function()
             angle = 180 * deltaX / Math.min( windowWidth / 2, draggableControl.startXY.x * 0.9 );
 
             if( !nextPage ) {
-                // Dampening using x^.6
+                // Dampening using x^.8
                 angle = Math.min( 60, Math.pow( angle, 0.8 ) );
             } else {
                 // Linear
@@ -102,7 +122,7 @@ var flip = (function()
 
     
 
-    onResize = function() 
+    onResize = function()
     {
         windowWidth = window.innerWidth;
     };
@@ -112,16 +132,16 @@ var flip = (function()
         flip.transitioning = false;
         flip.autotransition = false;
         shadow.style.display = 'none';
-        flipPagesContainer.style.display = 'none';  
+        flipPagesContainer.style.display = 'none';
 
         setTimeout( function() {
             flip.fire( 'globalTransitionEnd' );
         }, 0 );
     };
 
-    onTransitionEndStay = function() 
+    onTransitionEndStay = function()
     {
-        commonEndTransition();  
+        commonEndTransition();
 
         if( leftFlip ) {
             leftFlip.removeEventListener( transitionEndEventName, onTransitionEndStay, false);
@@ -147,7 +167,7 @@ var flip = (function()
         }, 0 );
     };
 
-    onTransitionEndNext = function() 
+    onTransitionEndNext = function()
     {
         if( nextPage ) {
             flip.removeClass( nextPage.html, 'right' );
@@ -164,7 +184,7 @@ var flip = (function()
         }
 
         if( prevPage ) {
-            // We are moving forward and we no longer need to keep prevPage's 
+            // We are moving forward and we no longer need to keep prevPage's
             // HTML on the screen. Remove it for memory and performance
             flip.remove( prevPage.html );
             flip.remove( prevPage.flip );
@@ -181,7 +201,7 @@ var flip = (function()
         topPage.onShowComplete( pageStack.length );
     };
 
-    onTransitionEndPrev = function() 
+    onTransitionEndPrev = function()
     {
         if( prevPage ) {
             flip.removeClass( prevPage.html, 'left' );
@@ -221,32 +241,13 @@ var flip = (function()
         topPage.onShowComplete( pageStack.length );
     };
 
-    
     dragListener = {
 
-        breach : function( deltaX ) 
-        {       
+        breach : function( deltaX )
+        {
             flip.transitioning = true;
             previousAngle = null;
 
-            if( !flip.autotransition ){
-                flip.addClass( flipPagesContainer, 'dragging' );
-            
-                if( leftFlip ) {           
-                    leftFlip.style[transitionKey]  = transformProp + ' 0';
-                    leftFlip.removeEventListener( transitionEndEventName, onTransitionEndStay, false);
-                    leftFlip.removeEventListener( transitionEndEventName, onTransitionEndNext, false);
-                }
-                if( rightFlip ) {
-                    rightFlip.style[transitionKey]  = transformProp + ' 0';
-                    rightFlip.removeEventListener( transitionEndEventName, onTransitionEndStay, false);
-                    rightFlip.removeEventListener( transitionEndEventName, onTransitionEndPrev, false);
-                }
-            }
-
-            
-            // TODO: refresh flip?
-                   
             if( deltaX > 0 ) {
 
                 // Going forward (to next)
@@ -254,10 +255,10 @@ var flip = (function()
 
                 leftBase   = topPage.html;
                 rightFlip  = topPage.flip;
-                
+
                 rightBase  = ( nextPage ? nextPage.html : null );
                 leftFlip   = ( nextPage ? nextPage.flip : null );
-                
+
             } else {
 
                 // Going backward (to prev)
@@ -265,13 +266,31 @@ var flip = (function()
 
                 rightBase  = topPage.html;
                 leftFlip   = topPage.flip;
-                
+
                 leftBase   = ( prevPage ? prevPage.html : null );
                 rightFlip  = ( prevPage ? prevPage.flip : null );
             }
 
+            // TODO: refresh flip?
+
+            if( !flip.autotransition ){
+                flip.addClass( flipPagesContainer, 'dragging' );
+
+                if( leftFlip ) {
+                    leftFlip.style[transitionKey]  = transformProp + ' 0s';
+                    leftFlip.removeEventListener( transitionEndEventName, onTransitionEndStay, false);
+                    leftFlip.removeEventListener( transitionEndEventName, onTransitionEndNext, false);
+                }
+                if( rightFlip ) {
+                    rightFlip.style[transitionKey]  = transformProp + ' 0s';
+                    rightFlip.removeEventListener( transitionEndEventName, onTransitionEndStay, false);
+                    rightFlip.removeEventListener( transitionEndEventName, onTransitionEndPrev, false);
+                }
+            }
+
+
             topPage.onObscure();
-            
+
             // Hide any panels from next/previous transitions
             // that might already be underway
             if( transitionForward && prevPage ) {
@@ -279,7 +298,7 @@ var flip = (function()
             } else if( nextPage ) {
                 nextPage.html.style.display = 'none';
             }
-            
+
             // Base Panels
             if( rightBase ) {
                 flip.addClass( rightBase, 'right' );
@@ -299,22 +318,22 @@ var flip = (function()
                 flip.removeClass( rightFlip, 'left' );
                 rightFlip.style.display = 'block';
             }
-            
+
             if( leftFlip ) {
                 flip.addClass( leftFlip, 'left' );
                 flip.removeClass( leftFlip, 'right' );
                 leftFlip.style.display = 'block';
             }
-            
+
             shadow.style.display = 'block';
-            
+
             shadow.style.opacity = 0;
-            
+
             flipPagesContainer.style.display = 'block';
         },
-        
+
         reset : function()
-        {   
+        {
             if( !leftFlip && !rightFlip ) {
                 return;
             }
@@ -322,7 +341,7 @@ var flip = (function()
             var angle = getAngle(),
                 dropLeftHandler,
                 dropRightHandler;
-            
+
             previousAngle = null;
 
             flip.removeClass( flipPagesContainer, 'dragging' );
@@ -332,7 +351,7 @@ var flip = (function()
             if( transitionForward ) {
                 dropLeftHandler = onTransitionEndNext;
                 dropRightHandler = onTransitionEndStay;
-            } else { 
+            } else {
                 dropLeftHandler = onTransitionEndStay;
                 dropRightHandler = onTransitionEndPrev;
             }
@@ -354,31 +373,39 @@ var flip = (function()
 
         move : function()
         {
-            if( !leftFlip && !rightFlip ) {
-                return;
+            if (!flip.waiting) {
+                nextFrame(updatePosition);
+                flip.waiting = true;
             }
-
-            var angle = getAngle();
-
-            //shadow.style.backgroundColor = "rgba( 0, 0, 0, " +  getShadowOpacity( angle ) + " )";
-            //shadow.style.opacity = getShadowOpacity( angle );
-
-            if( angle < 90 ) {
-                if( ( !previousAngle || previousAngle >= 90 ) && leftFlip ) {
-                    leftFlip.style[transformKey] = 'translateX( 4000px )';    
-                }
-                rightFlip.style[transformKey] = 'translateX( 0 ) perspective( ' + 3000 + perspectiveUnits + ') rotateY( -' + angle + 'deg )';
-            } else if( angle >= 90 ) {
-                if( ( !previousAngle || previousAngle < 90 ) && rightFlip ) {
-                    rightFlip.style[transformKey] = 'translateX( 4000px )';
-                }
-                leftFlip.style[transformKey]  = 'translateX( 0 ) perspective( ' + 3000 + perspectiveUnits + ') rotateY( -' + ( 180 + angle ) + 'deg )';
-            }
-            
-            previousAngle = angle;
         }
     };
 
+    updatePosition = function()
+    {
+        if( !leftFlip && !rightFlip ) {
+            return;
+        }
+
+        var angle = getAngle();
+
+        //shadow.style.backgroundColor = "rgba( 0, 0, 0, " +  getShadowOpacity( angle ) + " )";
+        //shadow.style.opacity = getShadowOpacity( angle );
+
+        if( angle < 90 ) {
+            if( ( !previousAngle || previousAngle >= 90 ) && leftFlip ) {
+                leftFlip.style[transformKey] = 'translateX( 4000px )';
+            }
+            rightFlip.style[transformKey] = 'translateX( 0 ) perspective( ' + 3000 + perspectiveUnits + ') rotateY( -' + angle + 'deg )';
+        } else if( angle >= 90 ) {
+            if( ( !previousAngle || previousAngle < 90 ) && rightFlip ) {
+                rightFlip.style[transformKey] = 'translateX( 4000px )';
+            }
+            leftFlip.style[transformKey]  = 'translateX( 0 ) perspective( ' + 3000 + perspectiveUnits + ') rotateY( -' + ( 180 + angle ) + 'deg )';
+        }
+
+        previousAngle = angle;
+        flip.waiting = false;
+    };
 
 
     // -------- PUBLIC HTML FUNCTIONS -------- //
@@ -402,7 +429,7 @@ var flip = (function()
 
     flip.hasClass = function( element, className )
     {
-        return element.className.match(new RegExp('(\\s|^)' + className + '(\\s|$)'));                    
+        return element.className.match(new RegExp('(\\s|^)' + className + '(\\s|$)'));
     };
 
     flip.addClass = function( element, className )
@@ -437,7 +464,7 @@ var flip = (function()
     flip.fire = function( eventName, message ) {
         flip.forEach( listeners, function( listener ) {
             if( listener && listener[ eventName ] ) {
-                listener[ eventName ]( message ); 
+                listener[ eventName ]( message );
             }
         });
     };
@@ -486,11 +513,11 @@ var flip = (function()
                 flip.autotransition = true;
                 dragListener.breach( -20, 0 );
 
-                rightFlip.style[transformKey] = baseTransform + 'rotateY( -90deg )'; 
+                rightFlip.style[transformKey] = baseTransform + 'rotateY( -90deg )';
                 leftFlip.style[transformKey]  = baseTransform + 'rotateY( -360deg )';
-                
-                rightFlip.style[transitionKey] = transformProp + ' 300ms ease-in';  
-                leftFlip.style[transitionKey]  = transformProp + ' 300ms ease-in';   
+
+                rightFlip.style[transitionKey] = transformProp + ' 300ms ease-in';
+                leftFlip.style[transitionKey]  = transformProp + ' 300ms ease-in';
 
                 setTimeout( function() {
                     // Wait for the second half
@@ -498,7 +525,7 @@ var flip = (function()
                         leftFlip.removeEventListener( transitionEndEventName, secondHalfFlip, false);
 
                         rightFlip.style[transformKey] = baseTransform + 'rotateY( 0deg )';
-                        
+
                         // Wait for completion
                         setTimeout( onTransitionEndPrev, 400 );
                     };
@@ -515,45 +542,45 @@ var flip = (function()
         var secondHalfFlip;
 
         if( !frontPage ) {
-            
+
             // This is the base case
             // That happens on startup
             // No animation for now
-            
+
             topPage = newPageControl;
             frontPage = topPage;
             pagesContainer.appendChild( topPage.html );
             flipPagesContainer.appendChild( topPage.flip );
 
             topPage.onShowComplete( pageStack.length );
-        
+
         } else {
 
             // This invokes an artificial page flip
-        
+
             flip.autotransition = true;
             flip.prime( newPageControl );
-          
+
             setTimeout( function() {
                 var baseTransform = 'translateX( 0 ) perspective(3000' + perspectiveUnits + ') ';
-                
+
                 // Start the artificial transition
-                dragListener.breach( 20, 0 );    
-        
-                rightFlip.style[transformKey] = baseTransform + 'rotateY( 0deg )'; 
+                dragListener.breach( 20, 0 );
+
+                rightFlip.style[transformKey] = baseTransform + 'rotateY( 0deg )';
                 leftFlip.style[transformKey]  = baseTransform + 'rotateY( 90deg )';
-                
-                rightFlip.style[transitionKey]  = transformProp + ' 300ms ease-in';  
-                leftFlip.style[transitionKey]   = transformProp + ' 300ms ease-in';   
-             
+
+                rightFlip.style[transitionKey]  = transformProp + ' 300ms ease-in';
+                leftFlip.style[transitionKey]   = transformProp + ' 300ms ease-in';
+
                 setTimeout( function() {
-                  
+
                     // Wait for the second half
                     secondHalfFlip = function() {
                         rightFlip.removeEventListener( transitionEndEventName, secondHalfFlip, false);
 
                         leftFlip.style[transformKey] = baseTransform + 'rotateY( 0deg )';
-                    
+
                         // Wait for completion
                         setTimeout( onTransitionEndNext, 400 );
                     };
@@ -606,7 +633,7 @@ var flip = (function()
         pagesContainer     = flip.createElem('div', { className: 'flip-base-pages' });
         flipPagesContainer = flip.createElem('div', { className: 'flip-pages' });
         shadow             = flip.createElem('div', { className: 'flip-shadow' });
-        
+
         fragment.appendChild( pagesContainer );
         fragment.appendChild( shadow );
         fragment.appendChild( flipPagesContainer );
