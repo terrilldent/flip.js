@@ -17,8 +17,8 @@ flip.basic = function( bookElement )
     // In case a string ID is passed
     bookElement = typeof bookElement === 'string' ? document.getElementById(bookElement) : bookElement;
 
-    if( bookElement.childNodes.length !== 1 && console.err ){
-        console.err( 'Expects a single child that contains all the page elements' );
+    if( bookElement.childNodes.length !== 1 && console.error ){
+        console.error( 'Expects a single child that contains all the page elements' );
         return;
     }
 
