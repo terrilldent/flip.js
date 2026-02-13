@@ -1,22 +1,14 @@
 {
   "name": "flip",
-  "version": "1.0.0",
-  "description": "",
+  "version": "1.1.0",
+  "description": "Mobile first flat style JavaScript page flip library",
   "private": true,
   "author": "Terrill Dent",
-  "main": "Gruntfile.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "license": "Released under MIT license, http://terrill.ca/flipjs/license",
-  "devDependencies": {
-    "grunt": "~0.4.1",
-    "grunt-contrib-compress": "~0.5.2",
-    "grunt-contrib-concat": "~0.3.0",
-    "grunt-contrib-uglify": "~0.2.2",
-    "grunt-jslint": "^1.1.12"
-  },
-  "dependencies": {
-    "grunt-jslint": "^1.1.12"
+  "scripts": {
+    "build": "bun run scripts/build.js",
+    "build:watch": "bun --watch scripts/build.js",
+    "dev": "bun run scripts/dev-server.js",
+    "test": "bun run build"
   }
 }
