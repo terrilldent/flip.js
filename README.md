@@ -44,7 +44,7 @@ The easiest way to get started is by calling `flip.basic(element)`. It expects t
     </div>
 </div>
 
-<script type='text/javascript' src='flip-v1.0.0.js'></script>
+<script type='text/javascript' src='flip-v1.1.0.js'></script>
 <script type='text/javascript'>
     window.addEventListener( 'DOMContentLoaded', function(){
         flip.basic( 'book' );
@@ -123,11 +123,27 @@ Making changes to page content during a transition is not handled very well. The
 Build Instructions
 ------------------
 
-You can build the library yourself using npm and grunt. Clone the repo, then run the `grunt` command from the root directory. It will produce output in the `/dist/` folder.
+The project now uses [Bun](https://bun.sh) for builds and local development.
+
+Install dependencies and build output into `/dist`:
 
 ```
-npm install
-grunt
+bun install
+bun run build
+```
+
+For active development, run the local static server and open the examples in your browser:
+
+```
+bun run dev
+```
+
+By default this serves `examples/basic-book` at [http://localhost:3000](http://localhost:3000).
+
+You can also rebuild automatically while editing source files:
+
+```
+bun run build:watch
 ```
 
 Looking for a JavaScript Wizard?

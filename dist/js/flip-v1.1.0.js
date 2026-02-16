@@ -1,5 +1,5 @@
 /*!
- * flip 1.0.0 - Copyright 2015 Terrill Dent, http://terrill.ca
+ * flip 1.1.0 - Copyright 2026 Terrill Dent, http://terrill.ca
  * Released under MIT license, http://terrill.ca/flipjs/license
  */
 
@@ -946,4 +946,5 @@ flip.page = (function()
         }
     };
 }());
+
 
