@@ -9,6 +9,11 @@ flip.draggable = (function()
             e = e.touches ? e.touches[0] : e;
             return { x : e.pageX , y : e.pageY };
         },
+
+        getInputType : function( e )
+        {
+            return e.type.indexOf( 'touch' ) === 0 ? 'touch' : 'mouse';
+        },
             
         handleEvent : function( e )
         {
@@ -28,8 +33,8 @@ flip.draggable = (function()
                     that.handleTouchEnd( e );
                     break;
                 case 'mouseout':
-                    // This filters the mouseout events to only those when you leave the window
-                    if( e.relatedTarget && e.relatedTarget.tagName === 'HTML' ){
+                    // This filters mouseout events to only those when you leave the window
+                    if( !e.relatedTarget || e.relatedTarget.tagName === 'HTML' ){
                         that.handleTouchEnd( e );
                     }
                     break;
@@ -63,6 +68,11 @@ flip.draggable = (function()
         handleTouchStart : function( e )
         {
             var that = this;
+
+            // Ignore synthetic mouse events that follow touch interactions.
+            if( that.lastTouchTime && that.getInputType( e ) === 'mouse' && Date.now() - that.lastTouchTime < 500 ) {
+                return;
+            }
             
             // TODO: add condition if target is an input, then return.
             
@@ -78,6 +88,8 @@ flip.draggable = (function()
                 // Ignore right click and second finger press
                 return;
             }
+
+            that.activeInputType = that.getInputType( e );
             
             that.outsideBuffer = false;
             that.curXY = null;
@@ -104,6 +116,10 @@ flip.draggable = (function()
             var that = this,
                 deltaY,
                 deltaX;
+
+            if( that.activeInputType && that.getInputType( e ) !== that.activeInputType ) {
+                return;
+            }
             
             e.preventDefault();
             
@@ -138,9 +154,18 @@ flip.draggable = (function()
         handleTouchEnd : function( e )
         {
             var that = this;
-            
+
+            if( that.activeInputType && that.getInputType( e ) !== that.activeInputType ) {
+                return;
+            }
+
+            if( that.getInputType( e ) === 'touch' ) {
+                that.lastTouchTime = Date.now();
+            }
+
             e.preventDefault();
             that.reset();
+            that.activeInputType = null;
         }
     };
     
@@ -153,6 +178,8 @@ flip.draggable = (function()
             draggable.target = target;
             draggable.listener = listener;
             draggable.buffer = buffer;
+            draggable.activeInputType = null;
+            draggable.lastTouchTime = 0;
 
             target.addEventListener( 'touchstart', draggable, false );
             if( flip.simulateTouch ) {

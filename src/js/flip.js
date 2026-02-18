@@ -80,7 +80,7 @@ var flip = (function()
         leftFlip,
         rightFlip;
 
-    flip.simulateTouch = !window.hasOwnProperty( 'ontouchstart' );
+    flip.simulateTouch = !( 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0 );
 
     getAngle = function()
     {
