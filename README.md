@@ -12,6 +12,8 @@ Examples
 
 [Basic Example](http://www.terrill.ca/flipjs/basic-book/)
 
+[Edge Case Playground](./examples/edge-cases/)
+
 [Advanced Example](http://www.terrill.ca/illustrations/)
 
 
@@ -53,6 +55,38 @@ The easiest way to get started is by calling `flip.basic(element)`. It expects t
 </body>
 </html>
 ```
+
+
+DOM Tree Overview
+-----------------
+
+The flip engine expects a specific DOM shape. After calling `flip.basic(...)`, pages are moved into internal containers and mirrored for animation.
+
+```text
+# Before flip.basic(bookElement)
+.flip-book#book
+└── <div> (source pages container)
+    ├── <div>Page 1 content</div>
+    ├── <div>Page 2 content</div>
+    └── <div>Page N content</div>
+
+# After flip.basic(...) / flip.init(...)
+.flip-book#book
+├── .flip-base-pages
+│   └── .flip-page-wrapper
+│       └── .flip-page
+│           └── (your page content)
+├── .flip-shadow
+└── .flip-pages
+    └── .flip-page-wrapper (cloned page used while flipping)
+        └── .flip-page
+            └── (clone of your page content)
+```
+
+Notes:
+- `.flip-base-pages` holds the currently visible/static pages.
+- `.flip-pages` holds temporary cloned pages used during transition animation.
+- `.flip-shadow` is shown during transitions for depth effect.
 
 
 Advanced Usage
@@ -138,7 +172,13 @@ For active development, run the local static server and open the examples in you
 bun run dev
 ```
 
-By default this serves `examples/basic-book` at [http://localhost:3000](http://localhost:3000).
+By default this serves an examples index at [http://localhost:3000](http://localhost:3000), with links to `basic-book` and `edge-cases`.
+
+To open a specific example by default, set `DEV_ROOT` when starting the server:
+
+```
+DEV_ROOT=/examples/edge-cases/ bun run dev
+```
 
 You can also rebuild automatically while editing source files:
 
