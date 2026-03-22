@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <title>flip.js edge case playground</title>
+  <link rel="stylesheet" href="../../dist/css/flip-v1.1.0.css">
+  <style>
+    body { margin: 0; font-family: system-ui, sans-serif; background: #f3f6fb; color: #122033; }
+    .layout { max-width: 980px; margin: 0 auto; padding: 1rem; }
+    .controls { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
+    button { border: 0; border-radius: 8px; background: #1f3b6e; color: white; padding: 0.55rem 0.85rem; cursor: pointer; }
+    button.secondary { background: #4e607d; }
+    .status { margin-bottom: 1rem; font-size: 0.9rem; }
+    .flip-book {
+      position: relative;
+      width: min(92vw, 900px);
+      height: min(70vh, 560px);
+      margin: 0 auto;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    }
+    .page { height: 100%; display: grid; place-content: center; padding: 2rem; box-sizing: border-box; text-align: center; }
+    .theme-dark { background: linear-gradient(145deg, #1f2f47, #0c1320); color: #f4f8ff; }
+    .theme-light { background: #ffffff; }
+    .theme-accent { background: linear-gradient(145deg, #e6f0ff, #d2f9f1); }
+    input { padding: 0.4rem; border-radius: 6px; border: 1px solid #d2d9e5; }
+    .pill { font-size: 0.8rem; border: 1px solid #8ea5ca; border-radius: 999px; padding: 0.2rem 0.6rem; display: inline-block; }
+  </style>
+</head>
+<body>
+  <main class="layout">
+    <h1>flip.js edge case playground</h1>
+    <p>Exercises odd page counts, dynamic pushes, form elements, and close/re-init behavior.</p>
+
+    <div class="controls">
+      <button id="next-btn">Push dynamic page</button>
+      <button id="back-btn" class="secondary">Pop page</button>
+      <button id="close-btn" class="secondary">Close book</button>
+      <button id="reset-btn" class="secondary">Reset to 5 seeded pages</button>
+    </div>
+    <div id="status" class="status">Ready.</div>
+
+    <div id="edge-book" class="flip-book"></div>
+  </main>
+
+  <script src="../../dist/js/flip-v1.1.0.js"></script>
+  <script>
+    const bookElement = document.getElementById('edge-book');
+    const status = document.getElementById('status');
+    let dynamicIndex = 0;
+
+    const seededPages = [
+      `<div class="page theme-dark"><div><h2>Cover</h2><p>Swipe or drag to move through pages.</p><span class="pill">page 1</span></div></div>`,
+      `<div class="page theme-light"><div><h2>Mixed Content</h2><p><strong>Edge case:</strong> long-ish text, links, and punctuation.</p><p><a href="#" onclick="return false;">Focusable link</a></p><span class="pill">page 2</span></div></div>`,
+      `<div class="page theme-accent"><div><h2>Form Controls</h2><p><label>Name <input value="Neil"></label></p><p><label>Mission <input value="Apollo 11"></label></p><span class="pill">page 3</span></div></div>`,
+      `<div class="page theme-light"><div><h2>Deliberate Odd Count</h2><p>This sample initializes with 5 pages to test odd stack behavior.</p><span class="pill">page 4</span></div></div>`,
+      `<div class="page theme-dark"><div><h2>Last Seeded Page</h2><p>Use buttons above to push and pop runtime pages.</p><span class="pill">page 5</span></div></div>`
+    ];
+
+    function setStatus(message) {
+      status.textContent = message;
+    }
+
+    function mountSeedPages() {
+      bookElement.innerHTML = `<div id="edge-pages">${seededPages.join('')}</div>`;
+      flip.basic(bookElement);
+      dynamicIndex = 0;
+      setStatus('Book initialized with 5 pages.');
+    }
+
+    function createDynamicPage(index) {
+      const page = document.createElement('div');
+      page.className = 'page theme-accent';
+      page.innerHTML = `<div><h2>Runtime Page ${index}</h2><p>Added via <code>flip.push()</code>.</p><p>${new Date().toLocaleTimeString()}</p><span class="pill">dynamic</span></div>`;
+
+      return flip.page.create(page, {
+        onShowComplete: function(depth) {
+          setStatus(`Showing runtime page ${index}. Stack depth: ${depth}`);
+        },
+        onStay: function() {
+          setStatus(`Runtime page ${index} stayed in place.`);
+        }
+      });
+    }
+
+    document.getElementById('next-btn').addEventListener('click', function() {
+      dynamicIndex += 1;
+      flip.push(createDynamicPage(dynamicIndex));
+      setStatus(`Pushed runtime page ${dynamicIndex}.`);
+    });
+
+    document.getElementById('back-btn').addEventListener('click', function() {
+      flip.pop();
+      setStatus('Requested pop().');
+    });
+
+    document.getElementById('close-btn').addEventListener('click', function() {
+      flip.close();
+      setStatus('Requested close() to return to first page.');
+    });
+
+    document.getElementById('reset-btn').addEventListener('click', mountSeedPages);
+
+    window.addEventListener('DOMContentLoaded', mountSeedPages, true);
+  </script>
+</body>
+</html>
